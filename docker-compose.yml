@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_WS_URL=ws://localhost:3001
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - meeting-network
+
+  # Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=your-secret-key-change-in-production
+      - CLIENT_URL=http://localhost:3000
+    networks:
+      - meeting-network
+
+networks:
+  meeting-network:
+    driver: bridge
