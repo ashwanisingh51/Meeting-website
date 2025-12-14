@@ -18,6 +18,30 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Run locally (frontend + backend)
+
+1. Copy `.env.example` to `.env` and edit values as needed.
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start both servers in development with a single command:
+
+```bash
+npm run dev:all
+```
+
+This runs the Next.js frontend on port `3000` and the Express backend on port `3001` (defaults from `.env`).
+
+You can also start servers individually:
+
+- Backend: `npm run server:dev` (nodemon) or `npm run server`
+- Frontend: `npm run dev`
+
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
