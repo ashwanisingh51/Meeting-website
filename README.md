@@ -1,60 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MeetHub: Video Meeting App
 
-## Getting Started
+A video meeting app where people create a room, share the room code and talk in real time. Video and audio go directly between browsers using WebRTC, and a Node.js server handles sign-in and signalling.
 
-First, run the development server:
+**Stack:** Next.js, React, TypeScript, Tailwind CSS, Zustand, Node.js, Express, Socket.IO, WebRTC, JWT, Docker
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+- Create a meeting room or join one with a room code
+- Live audio and video between participants (WebRTC with Google STUN servers)
+- In-room text chat
+- Mute and camera on/off controls, with the status shown to others
+- Join and leave notifications and a live participant list
+- Simple JWT sign-in with name and email
+- Docker and Docker Compose setup
+
+## How it works
+
+1. A user signs in and gets a JWT from `POST /api/auth/token`.
+2. They create a room (`POST /api/rooms`) or join an existing one with its code.
+3. The browser connects to the Socket.IO server and joins the room.
+4. Browsers exchange WebRTC offers, answers and ICE candidates through the server, then stream media directly to each other.
+5. Chat messages and mute/camera states travel through Socket.IO events.
+
+## Project structure
+
+```text
+├── app/                 # Next.js pages: sign in, home, room/[roomId]
+├── lib/
+│   ├── store.ts         # Zustand store (user and room state)
+│   └── useWebRTC.ts     # WebRTC peer connection hook
+├── server.js            # Express + Socket.IO backend
+├── Dockerfile           # frontend image
+├── Dockerfile.backend   # backend image
+└── docker-compose.yml
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Requires Node.js 18 or newer.
 
-## Run locally (frontend + backend)
-
-1. Copy `.env.example` to `.env` and edit values as needed.
-
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Start both servers in development with a single command:
+2. Create a `.env` file in the project root (it is git-ignored). Use your own random `JWT_SECRET`:
+
+```text
+PORT=3001
+JWT_SECRET=<a long random string>
+CLIENT_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_WS_URL=ws://localhost:3001
+```
+
+3. Start the frontend (port 3000) and backend (port 3001) together:
 
 ```bash
 npm run dev:all
 ```
 
-This runs the Next.js frontend on port `3000` and the Express backend on port `3001` (defaults from `.env`).
+Or with Docker:
 
-You can also start servers individually:
+```bash
+docker compose up --build
+```
 
-- Backend: `npm run server:dev` (nodemon) or `npm run server`
-- Frontend: `npm run dev`
+## Known limitations
 
+- Rooms are stored in server memory, so they are lost when the server restarts
+- Sign-in only asks for a name and email, with no password
+- Screen sharing has a signalling event but the capture itself is not built yet
+- Peer-to-peer WebRTC works well for small meetings but does not scale to large groups without a media server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Next steps
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Add screen sharing with `getDisplayMedia`
+- Store rooms in a database
+- Add a TURN server for users behind strict firewalls
